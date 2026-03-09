@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Indian Wedding Invitation</title>
+    <title>Wedding Invitation</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -156,7 +156,10 @@
         }
 
         @media (max-width: 600px) {
-            .couple-names { font-size: 3.5rem; flex-direction: column; }
+            body { padding: 0; background-color: var(--bg-cream); }
+            .invitation-card { box-shadow: none; border-radius: 0; padding: 10px; }
+            .inner-border { padding: 30px 10px; }
+            .couple-names { font-size: 3rem; flex-direction: column; }
             .couple-names span { margin: 5px 0; font-size: 2.5rem; }
             .photo-gallery { column-count: 1; }
             .intro-text { font-size: 0.9rem; }
@@ -205,7 +208,7 @@
                 <div class="details-section">
                     <h3>Grand Reception</h3>
                     <!-- Google Maps Link -->
-                    <a href="https://maps.app.goo.gl/6AHehGXibeTWXEtD9"_blank" class="map-link">
+                    <a href="https://maps.app.goo.gl/6AHehGXibeTWXEtD9" target="_blank" class="map-link">
                         <p><strong>Monday, 26th of Oct, 2026</strong></p>
                         <p>7:00 PM Onwards</p>
                         <p class="venue-title">Maxivision Eye Hospitals</p>
@@ -220,7 +223,7 @@
 
             <h2 class="gallery-title">A Glimpse of Us</h2>
             <div class="photo-gallery">
-                <video controls playsinline poster="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=">
+                <video id="gallery-video" controls playsinline poster="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=">
                     <source src="https://dl.dropboxusercontent.com/scl/fi/0bme0z93wr0hyfwxvewus/catalys.mp4?rlkey=qgk6tgc15le54bisepzz45xef&st=zjr97lws&dl=1" type="video/mp4">
                     Your browser does not support video.
                 </video>
@@ -238,26 +241,50 @@
 
     <script>
         const bgMusic = document.getElementById('bg-music');
+        const video = document.getElementById('gallery-video');
         let isPlaying = false;
 
         // Toggle music on click
         document.body.addEventListener('click', (e) => {
-            // Don't toggle music if clicking the address link
-            if (e.target.closest('.map-link')) return;
+            // Don't toggle music if clicking the address link or video controls
+            if (e.target.closest('.map-link') || e.target.closest('video')) return;
 
             if (isPlaying) {
                 bgMusic.pause();
-                console.log("Music Paused");
+                isPlaying = false;
             } else {
-                bgMusic.play().catch(e => console.log("Playback interaction required."));
-                console.log("Music Playing");
+                // Only play music if video is not currently playing
+                if (video.paused) {
+                    bgMusic.play().catch(e => console.log("Playback interaction required."));
+                    isPlaying = true;
+                } else {
+                    // If video is playing, we just mark that the user "wants" music 
+                    // so it starts when video pauses
+                    isPlaying = true; 
+                }
             }
-            isPlaying = !isPlaying;
+        });
+
+        // Video Event Listeners to handle Background Music
+        video.addEventListener('play', () => {
+            bgMusic.pause();
+        });
+
+        video.addEventListener('pause', () => {
+            if (isPlaying) {
+                bgMusic.play();
+            }
+        });
+
+        video.addEventListener('ended', () => {
+            if (isPlaying) {
+                bgMusic.play();
+            }
         });
 
         // Open Lightbox Function
         function openLightbox(src, event) {
-            event.stopPropagation(); // Prevents music from pausing when clicking a photo
+            event.stopPropagation(); 
             const lb = document.getElementById('lightbox');
             const lbImg = document.getElementById('lightbox-img');
             lbImg.src = src;
@@ -266,7 +293,7 @@
 
         // Close Lightbox Function
         function closeLightbox(event) {
-            event.stopPropagation(); // Prevents music from pausing when closing
+            event.stopPropagation(); 
             document.getElementById('lightbox').style.display = 'none';
         }
     </script>
