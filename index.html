@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wedding Invitation</title>
+    <title>Indian Wedding Invitation</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -243,52 +243,50 @@
         const bgMusic = document.getElementById('bg-music');
         const video = document.getElementById('gallery-video');
         let isPlaying = false;
-        let hasAutoPlayed = false; // Flag to ensure scroll triggers auto-play only once
+        let hasAutoPlayed = false; 
 
-        // Helper function to safely play music
-        function tryPlayMusic() {
-            if (video.paused) {
-                const playPromise = bgMusic.play();
-                if (playPromise !== undefined) {
-                    playPromise.then(() => {
-                        isPlaying = true;
-                    }).catch(e => {
-                        console.log("Playback interaction required.");
-                        isPlaying = false;
-                    });
-                }
+        // Play music on first interaction (scroll, touch, wheel)
+        function attemptAutoPlay() {
+            // If already autoplayed successfully or if video is playing, do nothing
+            if (hasAutoPlayed || !video.paused) return;
+
+            const playPromise = bgMusic.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    isPlaying = true;
+                    hasAutoPlayed = true; // Lock it so it doesn't trigger on scroll again
+                    
+                    // Remove listeners to improve performance once audio is successfully playing
+                    window.removeEventListener('scroll', attemptAutoPlay);
+                    window.removeEventListener('touchstart', attemptAutoPlay);
+                    window.removeEventListener('wheel', attemptAutoPlay);
+                }).catch(e => {
+                    // Kept false so we can try again if the browser blocks the first attempt
+                    console.log("Autoplay blocked, waiting for next interaction.");
+                });
             }
         }
 
-        // Play music on scroll or touchmove ONLY for the first time
-        const playMusicOnScroll = () => {
-            if (!hasAutoPlayed && video.paused) {
-                hasAutoPlayed = true; // Lock it so subsequent scrolls do nothing
-                tryPlayMusic();
-            }
-        };
-
-        // Event listeners for automatic playback when moving/scrolling screen initially
-        window.addEventListener('scroll', playMusicOnScroll, { passive: true });
-        window.addEventListener('touchmove', playMusicOnScroll, { passive: true });
-        window.addEventListener('wheel', playMusicOnScroll, { passive: true });
+        // 'touchstart' is critical for mobile as scroll/touchmove alone are blocked from playing audio
+        window.addEventListener('scroll', attemptAutoPlay, { passive: true });
+        window.addEventListener('touchstart', attemptAutoPlay, { passive: true });
+        window.addEventListener('wheel', attemptAutoPlay, { passive: true });
 
         // Toggle music play/pause on click anywhere on screen
         document.body.addEventListener('click', (e) => {
             // Don't trigger if clicking the address link or video controls
             if (e.target.closest('.map-link') || e.target.closest('video')) return;
 
-            if (!hasAutoPlayed) {
-                // If the user's very first interaction is a click instead of a scroll
-                hasAutoPlayed = true;
-                tryPlayMusic();
+            if (isPlaying) {
+                bgMusic.pause();
+                isPlaying = false;
             } else {
-                // Toggle state logic for manual taps
-                if (isPlaying) {
-                    bgMusic.pause();
-                    isPlaying = false;
-                } else {
-                    tryPlayMusic();
+                const playPromise = bgMusic.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isPlaying = true;
+                        hasAutoPlayed = true; // Manual click overrides autoplay logic
+                    }).catch(e => console.log(e));
                 }
             }
         });
