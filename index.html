@@ -183,9 +183,9 @@
             <p class="intro-text">Together with their families, we joyfully invite</p>
             
             <div class="couple-names">
-                Dhan Raj 
+                Bride Name 
                 <span>&</span> 
-                Ramana Kumar
+                Groom Name
             </div>
             
             <p class="intro-text" style="margin-top: 20px;">To celebrate the beginning of their new journey together</p>
@@ -230,9 +230,9 @@
 
                 <img onclick="openLightbox(this.src, event)" src="https://dl.dropboxusercontent.com/scl/fi/i3siqnwyekz8me4rqv174/1000171504-01.jpeg?rlkey=5yxosxewim2irvuhiq4vlz8kb&st=un5l197c&dl=1" alt="Couple Photo 1">
 
-                <img onclick="openLightbox(this.src, event)" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iMjUwIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjI1MCIgZmlsbD0iIzgwMDAwMCIvPjx0ZXh0IHg9IjIwMCIgeT0iMTI1IiBmaWxsPSIjZmZkNzAwIiBmb250LWZhbWlseT0ic2VyaWYiIGZvbnQtc2l6ZT0iMjQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGFsaWdubWVudC1iYXNlbGluZT0ibWlkZGxlIj5MYW5kc2NhcGUgUGhvdG8gMTwvdGV4dD48dGV4dCB4PSIyMDAiIHk9IjE2MCIgZmlsbD0iI2ZmZDcwMCIgZm9udC1mYW1pbHk9InNlcmlmIiBmb250LXNpemU9IjE2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj4oQ2xpY2sgdG8gRW5sYXJnZSk8L3RleHQ+PC9zdmc+" alt="Couple Photo 2">
+                <img onclick="openLightbox(this.src, event)" src="https://dl.dropboxusercontent.com/scl/fi/i3siqnwyekz8me4rqv174/1000171504-01.jpeg?rlkey=5yxosxewim2irvuhiq4vlz8kb&st=un5l197c&dl=1" alt="Couple Photo 2">
 
-                <img onclick="openLightbox(this.src, event)" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iMjUwIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjI1MCIgZmlsbD0iIzgwMDAwMCIvPjx0ZXh0IHg9IjIwMCIgeT0iMTI1IiBmaWxsPSIjZmZkNzAwIiBmb250LWZhbWlseT0ic2VyaWYiIGZvbnQtc2l6ZT0iMjQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGFsaWdubWVudC1iYXNlbGluZT0ibWlkZGxlIj5MYW5kc2NhcGUgUGhvdG8gMTwvdGV4dD48dGV4dCB4PSIyMDAiIHk9IjE2MCIgZmlsbD0iI2ZmZDcwMCIgZm9udC1mYW1pbHk9InNlcmlmIiBmb250LXNpemU9IjE2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj4oQ2xpY2sgdG8gRW5sYXJnZSk8L3RleHQ+PC9zdmc+" alt="Couple Photo 3">
+                <img onclick="openLightbox(this.src, event)" src="https://dl.dropboxusercontent.com/scl/fi/i3siqnwyekz8me4rqv174/1000171504-01.jpeg?rlkey=5yxosxewim2irvuhiq4vlz8kb&st=un5l197c&dl=1" alt="Couple Photo 3">
             </div>
 
             <p class="compliments">With best compliments from family & friends</p>
@@ -243,24 +243,52 @@
         const bgMusic = document.getElementById('bg-music');
         const video = document.getElementById('gallery-video');
         let isPlaying = false;
+        let hasAutoPlayed = false; // Flag to ensure scroll triggers auto-play only once
 
-        // Toggle music on click
+        // Helper function to safely play music
+        function tryPlayMusic() {
+            if (video.paused) {
+                const playPromise = bgMusic.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isPlaying = true;
+                    }).catch(e => {
+                        console.log("Playback interaction required.");
+                        isPlaying = false;
+                    });
+                }
+            }
+        }
+
+        // Play music on scroll or touchmove ONLY for the first time
+        const playMusicOnScroll = () => {
+            if (!hasAutoPlayed && video.paused) {
+                hasAutoPlayed = true; // Lock it so subsequent scrolls do nothing
+                tryPlayMusic();
+            }
+        };
+
+        // Event listeners for automatic playback when moving/scrolling screen initially
+        window.addEventListener('scroll', playMusicOnScroll, { passive: true });
+        window.addEventListener('touchmove', playMusicOnScroll, { passive: true });
+        window.addEventListener('wheel', playMusicOnScroll, { passive: true });
+
+        // Toggle music play/pause on click anywhere on screen
         document.body.addEventListener('click', (e) => {
-            // Don't toggle music if clicking the address link or video controls
+            // Don't trigger if clicking the address link or video controls
             if (e.target.closest('.map-link') || e.target.closest('video')) return;
 
-            if (isPlaying) {
-                bgMusic.pause();
-                isPlaying = false;
+            if (!hasAutoPlayed) {
+                // If the user's very first interaction is a click instead of a scroll
+                hasAutoPlayed = true;
+                tryPlayMusic();
             } else {
-                // Only play music if video is not currently playing
-                if (video.paused) {
-                    bgMusic.play().catch(e => console.log("Playback interaction required."));
-                    isPlaying = true;
+                // Toggle state logic for manual taps
+                if (isPlaying) {
+                    bgMusic.pause();
+                    isPlaying = false;
                 } else {
-                    // If video is playing, we just mark that the user "wants" music 
-                    // so it starts when video pauses
-                    isPlaying = true; 
+                    tryPlayMusic();
                 }
             }
         });
